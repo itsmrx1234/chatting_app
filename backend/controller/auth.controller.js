@@ -6,14 +6,22 @@ export const login= async(req,res)=>{
         const {username,password}=req.body;
         const user=await User.findOne({username});
         if(!user) return res.status(403).json({error:"username doesn't exist"});
-        const 
+        const isPasswordCorrect= await bcrypt.compare(password,user._password||'');
+        if(!isPasswordCorrect) return res.status(403).json({error:"password is incorrect"});
+        jsonwebtoken(user._id,res);
     } catch (error) {
         console.log(error.message);
         res.status(500).json({error:"Internal server error"});
     }
 }
 export const logout=(req,res)=>{
-    res.send("hello");
+    try {
+        res.cookie("jwt","",{maxAge:0});
+        res.status(200).json("logged out successfully");
+    } catch (error) {
+        console.log(error.message);
+        res.status(500).json({error:"Internal server error"});
+    }
 }
 export const signup=async(req,res)=>{
     try {
